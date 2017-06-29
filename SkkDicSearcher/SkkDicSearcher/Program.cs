@@ -63,15 +63,16 @@ namespace SkkDicSearcher
 
             //クライアントから送られたデータを受信する
             System.Text.Encoding enc = System.Text.Encoding.UTF8;
-            // bool disconnected = false;
+            bool disconnected = false;
             System.IO.MemoryStream ms = new System.IO.MemoryStream();
             byte[] resBytes = new byte[256];
             int resSize = 0;
+            /**
             while ((resSize = ns.Read(resBytes, 0, resBytes.Length)) != 0)
             {
                 ms.Write(resBytes, 0, resSize);
             }
-            /**
+             * */
             do
             {
                 //データの一部を受信する
@@ -88,7 +89,6 @@ namespace SkkDicSearcher
                 //まだ読み取れるデータがあるか、データの最後が\nでない時は、
                 // 受信を続ける
             } while (ns.DataAvailable || resBytes[resSize - 1] != '\n');
-             * */
             //受信したデータを文字列に変換
             string resMsg = enc.GetString(ms.GetBuffer(), 0, (int)ms.Length);
             ms.Close();
