@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Net.Sockets;
-using System.Threading.Tasks;
 using System.IO;
-using System.Collections.Generic;
 
 namespace CoreDicClient
 {
-    class Program
+	class Program
     {
         static void Main(string[] args)
         {
@@ -18,7 +16,7 @@ namespace CoreDicClient
             //サーバーに送信するデータを入力してもらう
             Console.WriteLine("文字列を入力し、Enterキーを押してください。");
             // string sendMsg = Console.ReadLine();
-            String sendMsg = "a";
+            String sendMsg = "はな";
             //何も入力されなかった時は終了
             if (sendMsg == null || sendMsg.Length == 0)
             {
@@ -85,6 +83,7 @@ namespace CoreDicClient
                 //末尾の\nを削除
                 resMsg = resMsg.TrimEnd('\n');
                 Console.WriteLine(resMsg);
+				Console.ReadLine();
             }            
         }
     }
