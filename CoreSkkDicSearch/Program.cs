@@ -6,7 +6,7 @@ namespace CoreSkkDicSearch
     {
         static void Main(string[] args)
         {
-            Server.StartServer(1177);
+            Server.StartServer(5678);
             Server.Listen();
         }
     }

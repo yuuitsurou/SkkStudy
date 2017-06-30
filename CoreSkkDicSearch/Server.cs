@@ -25,12 +25,18 @@ namespace CoreSkkDicSearch
             accept = true;  
    
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            String [] ls = File.ReadAllLines(@"C:\Users\ymine\skkdic\SKK-JISYO.L", Encoding.GetEncoding("EUC-JP"));
+            String dicPath = @"/usr/share/skk/SKK-JISYO.L";
+            // String dicPath = @"C:\Users\ymine\skkdic\SKK-JISYO.L";
+            String [] ls = File.ReadAllLines(dicPath, Encoding.GetEncoding("EUC-JP"));
             if (ls != null)
             {
-                dic = new List<string>(ls);
+                dic = new List<string>();
+                foreach(String l in ls) 
+                {
+                    if (!l.StartsWith(";;")) { dic.Add(l); }
+                }
                 dic.Sort();
-                 midasi = new List<String>();
+                midasi = new List<String>();
                 foreach (String i in dic)
                 {
                     midasi.Add(i.Split(' ')[0]);
@@ -97,10 +103,6 @@ namespace CoreSkkDicSearch
 								// await client.GetStream().WriteAsync(data, 0, data.Length);
 								client.GetStream().Write(data, 0, data.Length);
 							}
-						}
-						else
-						{
-							break;
 						}
 					}
                     Console.WriteLine("Closing connection.");  
