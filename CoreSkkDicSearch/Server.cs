@@ -39,61 +39,62 @@ namespace CoreSkkDicSearch
             Console.WriteLine($"Server started. Listening to TCP clients at 127.0.0.1:{port}");  
        }  
    
-        public static void Listen()
+        public static async void Listen()
        {  
             if(listener != null && accept) 
             {  
-   
                 // Continue listening.  
                 while (true)
                 {  
                     Console.WriteLine("Waiting for client...");  
-                    var clientTask = listener.AcceptTcpClientAsync(); // Get the client  
+                    var connectResult = listener.AcceptTcpClientAsync();
+                    if (connectResult.Result == null) { continue; }
+                    var client = connectResult.Result;
+                    // var client = await listener.AcceptTcpClientAsync(); // Get the client  
    
-                    if(clientTask.Result != null)
+                    Console.WriteLine("Client connected. Waiting for data.");  
+
+                    string message = "";
+                    while (message != null && !message.StartsWith("quit"))
                     {  
-                        Console.WriteLine("Client connected. Waiting for data.");  
-                        var client = clientTask.Result;
+                        // byte[] data = Encoding.ASCII.GetBytes("Send next data: [enter 'quit' to terminate] ");  
+                        // client.GetStream().Write(data, 0, data.Length);  
+                        byte[] data = null;
+                        MemoryStream ms = new MemoryStream();
+                        byte[] resBytes = new byte[256];
+                        int resSize = 0;
+                        do
+                        {
+                            // resSize = await client.GetStream().ReadAsync(resBytes, 0, resBytes.Length);
+                            resSize = client.GetStream().Read(resBytes, 0, resBytes.Length);
+                            if (resSize == 0) { break; }
+                            ms.Write(resBytes, 0 ,resSize);
 
-                        string message = "";
-                        while (message != null && !message.StartsWith("quit"))
-                        {  
-                            // byte[] data = Encoding.ASCII.GetBytes("Send next data: [enter 'quit' to terminate] ");  
-                            // client.GetStream().Write(data, 0, data.Length);  
-                            byte[] data = null;
-                            MemoryStream ms = new MemoryStream();
-                            byte[] resBytes = new byte[256];
-                            int resSize = 0;
-                            do
+                        } while (client.GetStream().DataAvailable || resBytes[resSize - 1] != '\n');
+                        // message = Encoding.ASCII.GetString(buffer);
+                        ArraySegment<byte> bf = new ArraySegment<byte>();
+                        ms.TryGetBuffer(out bf);
+                        message = Encoding.UTF8.GetString(bf.Array, 0, resSize);
+                        if (!message.StartsWith("quit")) 
+                        {
+                            message = message.TrimEnd('\n');
+                            int index = midasi.BinarySearch(message);
+                            if (index > -1)
                             {
-                                resSize = client.GetStream().Read(resBytes, 0, resBytes.Length);
-                                if (resSize == 0) { break; }
-                                ms.Write(resBytes, 0 ,resSize);
-
-                            } while (client.GetStream().DataAvailable || resBytes[resSize - 1] != '\n');
-                            // message = Encoding.ASCII.GetString(buffer);
-                            ArraySegment<byte> bf = new ArraySegment<byte>();
-                            ms.TryGetBuffer(out bf);
-                            message = Encoding.UTF8.GetString(bf.Array, 0, resSize);
-                            if (!message.StartsWith("quit")) 
-                            {
-                                message = message.TrimEnd('\n');
-                                int index = midasi.BinarySearch(message);
-                                if (index > -1)
-                                {
-                                    data = Encoding.UTF8.GetBytes(dic[index].Split(' ')[1]);
-                                }
-                                else
-                                {
-                                    data = Encoding.UTF8.GetBytes("Not found...");
-                                }
-                                client.GetStream().Write(data, 0, data.Length);
+                                data = Encoding.UTF8.GetBytes(dic[index].Split(' ')[1]);
                             }
+                            else
+                            {
+                                data = Encoding.UTF8.GetBytes("Not found...");
+                            }
+                            // await client.GetStream().WriteAsync(data, 0, data.Length);
+                            client.GetStream().Write(data, 0, data.Length);
                         }
-                        Console.WriteLine("Closing connection.");  
-                        client.GetStream().Dispose();  
-                    }  
+                    }
+                    Console.WriteLine("Closing connection.");  
+                    client.GetStream().Dispose();  
                 }  
+
             }  
         }  
     }   
