@@ -58,8 +58,9 @@ namespace CoreSkkDicSearch
                         string message = "";
                         while (message != null && !message.StartsWith("quit"))
                         {  
-                            byte[] data = Encoding.ASCII.GetBytes("Send next data: [enter 'quit' to terminate] ");  
-                            client.GetStream().Write(data, 0, data.Length);  
+                            // byte[] data = Encoding.ASCII.GetBytes("Send next data: [enter 'quit' to terminate] ");  
+                            // client.GetStream().Write(data, 0, data.Length);  
+                            byte[] data = null;
                             MemoryStream ms = new MemoryStream();
                             byte[] resBytes = new byte[256];
                             int resSize = 0;

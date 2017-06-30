@@ -12,7 +12,8 @@ namespace CoreDicClient
         {
             //サーバーに送信するデータを入力してもらう
             Console.WriteLine("文字列を入力し、Enterキーを押してください。");
-            string sendMsg = Console.ReadLine();
+            // string sendMsg = Console.ReadLine();
+            String sendMsg = "a";
             //何も入力されなかった時は終了
             if (sendMsg == null || sendMsg.Length == 0)
             {
@@ -28,11 +29,8 @@ namespace CoreDicClient
             using(var c = new TcpClient())
             {
                 var connectTask = c.ConnectAsync(ipOrHost, port);
-                var timoutTask = Task.Delay(1000);
-                var resultTask = Task.WhenAny(connectTask, timoutTask);
-                resultTask.Wait();
-                var result = resultTask.Result;
-                if (result != null) 
+                Task.WaitAll(connectTask);
+                if (c.Connected) 
                 {
                     Console.WriteLine("サーバー({0}:{1})と接続しました({2}:{3})。",
                                         ((System.Net.IPEndPoint)c.Client.RemoteEndPoint).Address,
@@ -44,8 +42,8 @@ namespace CoreDicClient
                     //読み取り、書き込みのタイムアウトを10秒にする
                     //デフォルトはInfiniteで、タイムアウトしない
                     //(.NET Framework 2.0以上が必要)
-                    ns.ReadTimeout = 10000;
-                    ns.WriteTimeout = 10000;
+                    //ns.ReadTimeout = 10000;
+                    //ns.WriteTimeout = 10000;
                     //サーバーにデータを送信する
                     //文字列をByte型配列に変換
                     System.Text.Encoding enc = System.Text.Encoding.UTF8;
@@ -76,6 +74,7 @@ namespace CoreDicClient
                     ArraySegment<byte> b = new ArraySegment<byte>();
                     ms.TryGetBuffer(out b);
                     string resMsg = enc.GetString(b.Array, 0, resSize);
+                    ns.Dispose();
                     ms.Dispose();
                     //末尾の\nを削除
                     resMsg = resMsg.TrimEnd('\n');
