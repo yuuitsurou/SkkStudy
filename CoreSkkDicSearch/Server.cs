@@ -12,9 +12,7 @@ namespace CoreSkkDicSearch
         private static TcpListener listener { get; set; }  
         private static bool accept { get; set; } = false;  
    
-        private static List<String> dic { get; set; }
-
-        private static List<String> midasi { get; set; }
+        private static DicLibs Dics { set; get; }
 
         public static void StartServer(int port) 
         {  
@@ -24,24 +22,10 @@ namespace CoreSkkDicSearch
             listener.Start();  
             accept = true;  
    
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            String dicPath = @"/usr/share/skk/SKK-JISYO.L";
+            String[] dicPath = { @"/usr/share/skk/SKK-JISYO.L" };
             // String dicPath = @"C:\Users\ymine\skkdic\SKK-JISYO.L";
-            String [] ls = File.ReadAllLines(dicPath, Encoding.GetEncoding("EUC-JP"));
-            if (ls != null)
-            {
-                dic = new List<string>();
-                foreach(String l in ls) 
-                {
-                    if (!l.StartsWith(";;")) { dic.Add(l); }
-                }
-                dic.Sort();
-                midasi = new List<String>();
-                foreach (String i in dic)
-                {
-                    midasi.Add(i.Split(' ')[0]);
-                }
-            }
+            Dics = new DicLibs();
+            Dics.SetupDics(dicPath);
             Console.WriteLine($"Server started. Listening to TCP clients at 127.0.0.1:{port}");  
        }  
    
@@ -91,10 +75,10 @@ namespace CoreSkkDicSearch
 							if (!message.StartsWith("quit"))
 							{
 								message = message.TrimEnd('\n');
-								int index = midasi.BinarySearch(message);
-								if (index > -1)
+                                String result = Dics.Search(message);
+								if (!String.IsNullOrWhiteSpace(result))
 								{
-									data = Encoding.UTF8.GetBytes(dic[index].Split(' ')[1] + '\n');
+									data = Encoding.UTF8.GetBytes(result + '\n');
 								}
 								else
 								{

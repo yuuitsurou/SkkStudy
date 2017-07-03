@@ -37,26 +37,43 @@ namespace CoreSkkDicSearch
 
         public Dictionary(String dicPath) 
         {
-            if (SetPath(dicPath)) { BuildKeyAndBody(); }
+            BuildKeyAndBody(dicPath);
         }
 
+        public void BuildKeyAndBody(String dicPath)
+        {
+            if (SetPath(dicPath))
+            {
+                BuildKeyAndBody();
+            }
+            else
+            {
+                throw new FileNotFoundException();
+            }
+        }
         public void BuildKeyAndBody()
         {
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            String [] ls = File.ReadAllLines(this._DicPath, Encoding.GetEncoding("EUC-JP"));
-            if (ls != null)
+            try {
+                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+                String [] ls = File.ReadAllLines(this._DicPath, Encoding.GetEncoding("EUC-JP"));
+                if (ls != null)
+                {
+                    this._Body = new List<string>();
+                    foreach(String l in ls) 
+                    {
+                        if (!l.StartsWith(";;")) { this._Body.Add(l); }
+                    }
+                    this._Body.Sort();
+                    this._Key = new List<String>();
+                    foreach (String i in this._Body)
+                    {
+                        this._Key.Add(i.Split(' ')[0]);
+                    }
+                }
+            } 
+            catch (Exception ex)
             {
-                this._Body = new List<string>();
-                foreach(String l in ls) 
-                {
-                    if (!l.StartsWith(";;")) { this._Body.Add(l); }
-                }
-                this._Body.Sort();
-                this._Key = new List<String>();
-                foreach (String i in this._Body)
-                {
-                    this._Key.Add(i.Split(' ')[0]);
-                }
+                throw ex;
             }
         }
 
@@ -71,6 +88,37 @@ namespace CoreSkkDicSearch
             {
                 return String.Empty;
             }
+        }
+    }
+
+    public class DicLibs
+    {
+        private List<Dictionary> _Dics { set; get; }
+        private List<Dictionary> Dics
+        {
+            set { this._Dics = value; }
+            get { return this._Dics ?? (this._Dics = new List<Dictionary>()); }
+        }
+
+        public void SetupDics(String[] dicPaths) 
+        {
+            foreach (var dicpath in dicPaths)
+            {
+                this.Dics.Add(new Dictionary(dicpath));
+            }
+        }
+
+        public String Search(String word)
+        {
+            String result = String.Empty;
+            foreach (var dic in this.Dics)
+            {
+                String w = dic.Search(word);
+                if (String.IsNullOrWhiteSpace(w)) { continue; }
+                if (!String.IsNullOrWhiteSpace(result) && w.StartsWith("/")) { w = w.Remove(0, 1); }
+                result += w;
+            }
+            return result;
         }
     }
 }
