@@ -12,7 +12,7 @@ namespace CoreSkkDicSearch
         private static TcpListener listener { get; set; }  
         private static bool accept { get; set; } = false;  
    
-        private static DicLibs Dics { set; get; }
+        private static JisyoLibs Jisyos { set; get; }
 
         public static void StartServer(int port) 
         {  
@@ -32,8 +32,8 @@ namespace CoreSkkDicSearch
                 @"/usr/share/skk/SKK-JISYO.itaiji.JIS3_4"
             };
             // String dicPath = @"C:\Users\ymine\skkdic\SKK-JISYO.L";
-            Dics = new DicLibs();
-            Dics.SetupDics(dicPath);
+            Jisyos = new JisyoLibs();
+            Jisyos.SetupJisyos(dicPath);
             Console.WriteLine($"Server started. Listening to TCP clients at 127.0.0.1:{port}");  
        }  
    
@@ -83,7 +83,7 @@ namespace CoreSkkDicSearch
 							if (!message.StartsWith("quit"))
 							{
 								message = message.TrimEnd('\n');
-                                String result = Dics.Search(message);
+                                String result = Jisyos.Search(message);
 								if (!String.IsNullOrWhiteSpace(result))
 								{
 									data = Encoding.UTF8.GetBytes(result + '\n');

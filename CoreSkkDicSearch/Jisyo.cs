@@ -5,14 +5,14 @@ using System.Text;
 
 namespace CoreSkkDicSearch 
 {
-    public class Dictionary
+    public class Jisyo
     {
-        private String _DicPath { set; get; }
+        private String _JisyoPath { set; get; }
         public Boolean SetPath(String path)
         {
             if (File.Exists(path))
             {
-                this._DicPath = path;
+                this._JisyoPath = path;
                 return true;
             }
             else
@@ -35,14 +35,14 @@ namespace CoreSkkDicSearch
             get { return this._Key ?? ( this._Key = new List<string>() ); }
         }
 
-        public Dictionary(String dicPath) 
+        public Jisyo(String jisyoPath) 
         {
-            BuildKeyAndBody(dicPath);
+            BuildKeyAndBody(jisyoPath);
         }
 
-        public void BuildKeyAndBody(String dicPath)
+        public void BuildKeyAndBody(String jisyoPath)
         {
-            if (SetPath(dicPath))
+            if (SetPath(jisyoPath))
             {
                 BuildKeyAndBody();
             }
@@ -55,7 +55,7 @@ namespace CoreSkkDicSearch
         {
             try {
                 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-                String [] ls = File.ReadAllLines(this._DicPath, Encoding.GetEncoding("EUC-JP"));
+                String [] ls = File.ReadAllLines(this._JisyoPath, Encoding.GetEncoding("EUC-JP"));
                 if (ls != null)
                 {
                     this.Body = new List<string>();
@@ -63,11 +63,16 @@ namespace CoreSkkDicSearch
                     {
                         if (!l.StartsWith(";;")) { this.Body.Add(l); }
                     }
-                    this.Body.Sort();
+                    this.Body.Sort(delegate(String x, String y) 
+                    {
+                        String keyX = x.Split(" /".ToCharArray())[0];
+                        String keyY = y.Split(" /".ToCharArray())[0];
+                        return (keyX == keyY ? (0) : (keyX.CompareTo(keyY) < 0 ? (-1) : (1)));
+                    });
                     this.Key = new List<String>();
                     foreach (String i in this.Body)
                     {
-                        this.Key.Add(i.Split(' ')[0]);
+                        this.Key.Add(i.Split(" /".ToCharArray())[0]);
                     }
                 }
             } 
@@ -82,7 +87,7 @@ namespace CoreSkkDicSearch
             int index = this.Key.BinarySearch(word);
             if (index > -1)
             {
-                return this.Body[index].Split(' ')[1];
+                return "/" + this.Body[index].Split(" /".ToCharArray())[1];
             }
             else
             {
@@ -91,29 +96,29 @@ namespace CoreSkkDicSearch
         }
     }
 
-    public class DicLibs
+    public class JisyoLibs
     {
-        private List<Dictionary> _Dics { set; get; }
-        private List<Dictionary> Dics
+        private List<Jisyo> _Jisyos { set; get; }
+        private List<Jisyo> Jisyos
         {
-            set { this._Dics = value; }
-            get { return this._Dics ?? (this._Dics = new List<Dictionary>()); }
+            set { this._Jisyos = value; }
+            get { return this._Jisyos ?? (this._Jisyos = new List<Jisyo>()); }
         }
 
-        public void SetupDics(String[] dicPaths) 
+        public void SetupJisyos(String[] jisyoPaths) 
         {
-            foreach (var dicpath in dicPaths)
+            foreach (var jisyopath in jisyoPaths)
             {
-                this.Dics.Add(new Dictionary(dicpath));
+                this.Jisyos.Add(new Jisyo(jisyopath));
             }
         }
 
         public String Search(String word)
         {
             String result = String.Empty;
-            foreach (var dic in this.Dics)
+            foreach (var jisyo in this.Jisyos)
             {
-                String w = dic.Search(word);
+                String w = jisyo.Search(word);
                 if (String.IsNullOrWhiteSpace(w)) { continue; }
                 if (!String.IsNullOrWhiteSpace(result) && w.StartsWith("/")) { w = w.Remove(0, 1); }
                 result += w;
