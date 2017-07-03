@@ -22,7 +22,15 @@ namespace CoreSkkDicSearch
             listener.Start();  
             accept = true;  
    
-            String[] dicPath = { @"/usr/share/skk/SKK-JISYO.L" };
+            String[] dicPath = 
+            { 
+                @"/usr/share/skk/SKK-JISYO.L", 
+                @"/usr/share/skk/SKK-JISYO.JIS2", 
+                @"/usr/share/skk/SKK-JISYO.JIS2004", 
+                @"/usr/share/skk/SKK-JISYO.JIS3_4", 
+                @"/usr/share/skk/SKK-JISYO.itaiji", 
+                @"/usr/share/skk/SKK-JISYO.itaiji.JIS3_4"
+            };
             // String dicPath = @"C:\Users\ymine\skkdic\SKK-JISYO.L";
             Dics = new DicLibs();
             Dics.SetupDics(dicPath);

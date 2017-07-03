@@ -58,16 +58,16 @@ namespace CoreSkkDicSearch
                 String [] ls = File.ReadAllLines(this._DicPath, Encoding.GetEncoding("EUC-JP"));
                 if (ls != null)
                 {
-                    this._Body = new List<string>();
+                    this.Body = new List<string>();
                     foreach(String l in ls) 
                     {
-                        if (!l.StartsWith(";;")) { this._Body.Add(l); }
+                        if (!l.StartsWith(";;")) { this.Body.Add(l); }
                     }
-                    this._Body.Sort();
-                    this._Key = new List<String>();
-                    foreach (String i in this._Body)
+                    this.Body.Sort();
+                    this.Key = new List<String>();
+                    foreach (String i in this.Body)
                     {
-                        this._Key.Add(i.Split(' ')[0]);
+                        this.Key.Add(i.Split(' ')[0]);
                     }
                 }
             } 
@@ -79,10 +79,10 @@ namespace CoreSkkDicSearch
 
         public String Search(String word)
         {
-            int index = this._Key.BinarySearch(word);
+            int index = this.Key.BinarySearch(word);
             if (index > -1)
             {
-                return this._Body[index].Split(' ')[1];
+                return this.Body[index].Split(' ')[1];
             }
             else
             {
