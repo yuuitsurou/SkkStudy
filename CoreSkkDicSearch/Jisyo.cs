@@ -87,7 +87,9 @@ namespace CoreSkkDicSearch
             int index = this.Key.BinarySearch(word);
             if (index > -1)
             {
-                return "/" + this.Body[index].Split(" /".ToCharArray())[1];
+                Console.WriteLine(this.Body[index]);
+                Console.WriteLine(this.Body[index].Split(' ')[1]);
+                return this.Body[index].Split(' ')[1];
             }
             else
             {
@@ -120,7 +122,7 @@ namespace CoreSkkDicSearch
             {
                 String w = jisyo.Search(word);
                 if (String.IsNullOrWhiteSpace(w)) { continue; }
-                if (!String.IsNullOrWhiteSpace(result) && w.StartsWith("/")) { w = w.Remove(0, 1); }
+                // if (!String.IsNullOrWhiteSpace(result) && w.StartsWith("/")) { w = w.Remove(0, 1); }
                 result += w;
             }
             return result;

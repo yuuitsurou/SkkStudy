@@ -15,8 +15,8 @@ namespace CoreDicClient
         {
             //サーバーに送信するデータを入力してもらう
             Console.WriteLine("文字列を入力し、Enterキーを押してください。");
-            // string sendMsg = Console.ReadLine();
-            String sendMsg = "ふ";
+            string sendMsg = Console.ReadLine();
+            // String sendMsg = "は";
             //何も入力されなかった時は終了
             if (sendMsg == null || sendMsg.Length == 0)
             {
