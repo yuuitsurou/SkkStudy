@@ -14,6 +14,8 @@ namespace CoreSkkDicSearch
    
         private static JisyoLibs Jisyos { set; get; }
 
+        private static GoogleIme Google { set; get; }
+
         public static void StartServer(int port) 
         {  
             IPAddress address = IPAddress.Parse("127.0.0.1");  
@@ -34,6 +36,7 @@ namespace CoreSkkDicSearch
             // String dicPath = @"C:\Users\ymine\skkdic\SKK-JISYO.L";
             Jisyos = new JisyoLibs();
             Jisyos.SetupJisyos(dicPath);
+            Google = new GoogleIme();
             Console.WriteLine($"Server started. Listening to TCP clients at 127.0.0.1:{port}");  
        }  
    
@@ -90,7 +93,8 @@ namespace CoreSkkDicSearch
 								}
 								else
 								{
-									data = Encoding.UTF8.GetBytes("Not found..." + '\n');
+                                    data = Encoding.UTF8.GetBytes(Google.Search(message) + '\n');
+									// data = Encoding.UTF8.GetBytes("Not found..." + '\n');
 								}
 								// await client.GetStream().WriteAsync(data, 0, data.Length);
 								client.GetStream().Write(data, 0, data.Length);
