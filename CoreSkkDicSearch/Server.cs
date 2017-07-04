@@ -27,11 +27,7 @@ namespace CoreSkkDicSearch
             String[] dicPath = 
             { 
                 @"/usr/share/skk/SKK-JISYO.L", 
-                @"/usr/share/skk/SKK-JISYO.JIS2", 
-                @"/usr/share/skk/SKK-JISYO.JIS2004", 
-                @"/usr/share/skk/SKK-JISYO.JIS3_4", 
-                @"/usr/share/skk/SKK-JISYO.itaiji", 
-                @"/usr/share/skk/SKK-JISYO.itaiji.JIS3_4"
+                @"/usr/share/skk/SKK-JISYO.jinmei", 
             };
             // String dicPath = @"C:\Users\ymine\skkdic\SKK-JISYO.L";
             Jisyos = new JisyoLibs();
@@ -89,11 +85,13 @@ namespace CoreSkkDicSearch
                                 String result = Jisyos.Search(message);
 								if (!String.IsNullOrWhiteSpace(result))
 								{
-									data = Encoding.UTF8.GetBytes(result + '\n');
+									byte[] u8 = Encoding.UTF8.GetBytes(result + '\n');
+                                    data = Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding("UTF-8"), u8);
 								}
 								else
 								{
-                                    data = Encoding.UTF8.GetBytes(Google.Search(message) + '\n');
+                                    byte[] u8 = Encoding.UTF8.GetBytes(Google.Search(message) + '\n');
+                                    data = Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding("UTF-8"), u8);
 									// data = Encoding.UTF8.GetBytes("Not found..." + '\n');
 								}
 								// await client.GetStream().WriteAsync(data, 0, data.Length);
