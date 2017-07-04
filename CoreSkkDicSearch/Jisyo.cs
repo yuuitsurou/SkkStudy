@@ -65,14 +65,14 @@ namespace CoreSkkDicSearch
                     }
                     this.Body.Sort(delegate(String x, String y) 
                     {
-                        String keyX = x.Split(" /".ToCharArray())[0];
-                        String keyY = y.Split(" /".ToCharArray())[0];
+                        String keyX = x.Split('/')[0].TrimEnd(' ');
+                        String keyY = y.Split('/')[0].TrimEnd(' ');
                         return (keyX == keyY ? (0) : (keyX.CompareTo(keyY) < 0 ? (-1) : (1)));
                     });
                     this.Key = new List<String>();
                     foreach (String i in this.Body)
                     {
-                        this.Key.Add(i.Split(" /".ToCharArray())[0]);
+                        this.Key.Add(i.Split('/')[0].TrimEnd(' '));
                     }
                 }
             } 
@@ -87,9 +87,10 @@ namespace CoreSkkDicSearch
             int index = this.Key.BinarySearch(word);
             if (index > -1)
             {
-                Console.WriteLine(this.Body[index]);
-                Console.WriteLine(this.Body[index].Split(' ')[1]);
-                return this.Body[index].Split(' ')[1];
+                String [] s = this.Body[index].Split('/');
+                if (s == null) return String.Empty;
+                List<String> items = new List<string>(s); 
+                return "/" + String.Join("/", items.GetRange(1, items.Count - 1).ToArray());
             }
             else
             {
@@ -122,7 +123,7 @@ namespace CoreSkkDicSearch
             {
                 String w = jisyo.Search(word);
                 if (String.IsNullOrWhiteSpace(w)) { continue; }
-                // if (!String.IsNullOrWhiteSpace(result) && w.StartsWith("/")) { w = w.Remove(0, 1); }
+                if (!String.IsNullOrWhiteSpace(result) && w.StartsWith("/")) { w = w.TrimStart('/'); }
                 result += w;
             }
             return result;
