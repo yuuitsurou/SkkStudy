@@ -61,8 +61,8 @@ namespace CoreSkkDicSearch
                         byte[] resBytes = new byte[512];
                         int resSize = 0;
 						Boolean connected = true;
-                       // do
-                        // {
+                        do
+                        {
                             // resSize = await client.GetStream().ReadAsync(resBytes, 0, resBytes.Length);
                             resSize = client.GetStream().Read(resBytes, 0, resBytes.Length);
 							if (resSize == 0)
@@ -72,17 +72,15 @@ namespace CoreSkkDicSearch
 							}
                             ms.Write(resBytes, 0 ,resSize);
 
-                        // } while (client.GetStream().DataAvailable || resBytes[resSize - 1] != '\n');
+                        } while (client.GetStream().DataAvailable || resBytes[resSize - 1] != '\n');
 						if (connected)
 						{
 							// message = Encoding.ASCII.GetString(buffer);
 							ArraySegment<byte> bf = new ArraySegment<byte>();
 							ms.TryGetBuffer(out bf);
-                            message = Encoding.GetEncoding("EUC-JP").GetString(bf.Array, 0, resSize);
-							// message = Encoding.UTF8.GetString(bf.Array, 0, resSize);
+							message = Encoding.UTF8.GetString(bf.Array, 0, resSize);
 							if (!message.StartsWith("0"))
 							{
-                                message = message.TrimStart('1');
 								message = message.TrimEnd('\n');
                                 Console.WriteLine(message);
                                 String result = Jisyos.Search(message);
