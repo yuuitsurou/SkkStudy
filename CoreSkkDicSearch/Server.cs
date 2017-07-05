@@ -52,17 +52,17 @@ namespace CoreSkkDicSearch
                     Console.WriteLine("Client connected. Waiting for data.");  
 
                     string message = "";
-                    while (message != null && !message.StartsWith("quit"))
+                    while (message != null && !message.StartsWith("0"))
                     {  
                         // byte[] data = Encoding.ASCII.GetBytes("Send next data: [enter 'quit' to terminate] ");  
                         // client.GetStream().Write(data, 0, data.Length);  
                         byte[] data = null;
                         MemoryStream ms = new MemoryStream();
-                        byte[] resBytes = new byte[256];
+                        byte[] resBytes = new byte[512];
                         int resSize = 0;
 						Boolean connected = true;
-                        do
-                        {
+                       // do
+                        // {
                             // resSize = await client.GetStream().ReadAsync(resBytes, 0, resBytes.Length);
                             resSize = client.GetStream().Read(resBytes, 0, resBytes.Length);
 							if (resSize == 0)
@@ -72,26 +72,30 @@ namespace CoreSkkDicSearch
 							}
                             ms.Write(resBytes, 0 ,resSize);
 
-                        } while (client.GetStream().DataAvailable || resBytes[resSize - 1] != '\n');
+                        // } while (client.GetStream().DataAvailable || resBytes[resSize - 1] != '\n');
 						if (connected)
 						{
 							// message = Encoding.ASCII.GetString(buffer);
 							ArraySegment<byte> bf = new ArraySegment<byte>();
 							ms.TryGetBuffer(out bf);
-							message = Encoding.UTF8.GetString(bf.Array, 0, resSize);
-							if (!message.StartsWith("quit"))
+                            message = Encoding.GetEncoding("EUC-JP").GetString(bf.Array, 0, resSize);
+							// message = Encoding.UTF8.GetString(bf.Array, 0, resSize);
+							if (!message.StartsWith("0"))
 							{
+                                message = message.TrimStart('1');
 								message = message.TrimEnd('\n');
+                                Console.WriteLine(message);
                                 String result = Jisyos.Search(message);
+                                Console.WriteLine(result);
 								if (!String.IsNullOrWhiteSpace(result))
 								{
 									byte[] u8 = Encoding.UTF8.GetBytes(result + '\n');
-                                    data = Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding("UTF-8"), u8);
+                                    data = Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding("EUC-JP"), u8);
 								}
 								else
 								{
                                     byte[] u8 = Encoding.UTF8.GetBytes(Google.Search(message) + '\n');
-                                    data = Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding("UTF-8"), u8);
+                                    data = Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding("EUC-JP"), u8);
 									// data = Encoding.UTF8.GetBytes("Not found..." + '\n');
 								}
 								// await client.GetStream().WriteAsync(data, 0, data.Length);
