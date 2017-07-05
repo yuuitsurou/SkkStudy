@@ -6,7 +6,8 @@ namespace CsSkkServer
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Server.StartServer(1178);
+            Server.Listen();
         }
     }
 }

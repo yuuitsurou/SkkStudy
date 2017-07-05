@@ -38,73 +38,57 @@ namespace CsSkkServer
    
         public static void Listen()
        {  
-            if(listener != null && accept) 
+           if (listener == null || !accept) 
+           {
+               return;
+           }
+            // Continue listening.  
+            while (true)
             {  
-                // Continue listening.  
-                while (true)
+                Console.WriteLine("Waiting for client...");  
+                var connectResult = listener.AcceptTcpClientAsync();
+                if (connectResult.Result == null) { continue; }
+                var client = connectResult.Result;
+                // var client = await listener.AcceptTcpClientAsync(); // Get the client  
+                Console.WriteLine("Client connected. Waiting for data.");  
+                string mes = "";
+                while (mes != null && !mes.StartsWith("0"))
                 {  
-                    Console.WriteLine("Waiting for client...");  
-                    var connectResult = listener.AcceptTcpClientAsync();
-                    if (connectResult.Result == null) { continue; }
-                    var client = connectResult.Result;
-                    // var client = await listener.AcceptTcpClientAsync(); // Get the client  
-   
-                    Console.WriteLine("Client connected. Waiting for data.");  
-
-                    string mes = "";
-                    while (mes != null && !mes.StartsWith("0"))
-                    {  
-                        byte[] data = null;
-                        MemoryStream ms = new MemoryStream();
-                        byte[] resBytes = new byte[512];
-                        int resSize = 0;
-						Boolean connected = true;
-                        while (true)
-                        {
-                            resSize = client.GetStream().Read(resBytes, 0, resBytes.Length);
-							if (resSize == 0)
-							{
-								connected = false;
-								break;
-							}
-                            ms.Write(resBytes, 0 ,resSize);
-                            if (!client.GetStream().DataAvailable) break;
-                            if (resBytes[0] == '1' && resBytes[resBytes.Length - 1] == ' ') break;                            
-                            if (resBytes[0] != '1') break;
-                        }
-						if (connected)
-						{
-							ArraySegment<byte> bf = new ArraySegment<byte>();
-							ms.TryGetBuffer(out bf);
-                            byte[] utf8Bytes = Encoding.Convert(Encoding.GetEncoding("EUC-JP"), Encoding.UTF8, bf.Array);
-							mes = Encoding.UTF8.GetString(utf8Bytes, 0, utf8Bytes.Length);
-                            switch (mes.Substring(0, 1))
-                            {
-                                case "0":
-                                    break;
-                                case "1":
-                                    data = GetResult(mes);
-    								client.GetStream().Write(data, 0, data.Length);
-                                    break;
-                                case "2":
-                                    break;
-                                case "3":
-                                    break;
-                                case "4":
-                                    break;
-                                default:
-                                    break;
-                            }
-						}
-					}
-                    Console.WriteLine("Closing connection.");  
-                    client.GetStream().Dispose();
-					client.Dispose();
-                }  
-
+                    MemoryStream ms = null;
+                    if (ReadMessage(client, out ms))
+                    {
+                        ArraySegment<byte> bf = new ArraySegment<byte>();
+                        ms.TryGetBuffer(out bf);
+                        byte[] utf8Bytes = Encoding.Convert(Encoding.GetEncoding("EUC-JP"), Encoding.UTF8, bf.Array);
+                        mes = Encoding.UTF8.GetString(utf8Bytes, 0, utf8Bytes.Length);
+                        SendMessage(client, mes);
+                    }
+                }
+                Console.WriteLine("Closing connection.");  
+                client.GetStream().Dispose();
+                client.Dispose();
             }  
         }
 
+        private static Boolean ReadMessage(TcpClient client, out MemoryStream ms)
+        {
+            ms = new MemoryStream();
+            byte[] resBytes = new byte[512];
+            int resSize = 0;
+            while (true)
+            {
+                resSize = client.GetStream().Read(resBytes, 0, resBytes.Length);
+                if (resSize == 0)
+                {
+                    return false;
+                }
+                ms.Write(resBytes, 0 ,resSize);
+                if (!client.GetStream().DataAvailable) break;
+                if (resBytes[0] == '1' && resBytes[resBytes.Length - 1] == ' ') break;                            
+                if (resBytes[0] != '1') break;
+            }
+            return true;
+        }
         private static byte[] GetResult(String mes)
         {
             mes = mes.TrimEnd(' ');
@@ -118,6 +102,28 @@ namespace CsSkkServer
             {
                 byte[] u8 = Encoding.UTF8.GetBytes(Google.Search(mes) + '\n');
                 return Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding("EUC-JP"), u8);
+            }
+
+        }
+        private static void SendMessage(TcpClient client, String mes)
+        {
+            byte[] data = null;
+            switch (mes.Substring(0, 1))
+            {
+                case "0":
+                    break;
+                case "1":
+                    data = GetResult(mes);
+                    client.GetStream().Write(data, 0, data.Length);
+                    break;
+                case "2":
+                    break;
+                case "3":
+                    break;
+                case "4":
+                    break;
+                default:
+                    break;
             }
 
         }
