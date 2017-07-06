@@ -91,6 +91,8 @@ namespace CsSkkServer
         }
         private static byte[] GetResult(String mes)
         {
+            mes = mes.TrimStart('1');
+            mes = mes.TrimStart('/');
             mes = mes.TrimEnd(' ');
             String result = Jisyos.Search(mes);
             if (!String.IsNullOrWhiteSpace(result))
@@ -105,6 +107,7 @@ namespace CsSkkServer
             }
 
         }
+
         private static void SendMessage(TcpClient client, String mes)
         {
             byte[] data = null;
@@ -117,8 +120,14 @@ namespace CsSkkServer
                     client.GetStream().Write(data, 0, data.Length);
                     break;
                 case "2":
+                    byte[] u82 = Encoding.UTF8.GetBytes("CsSkkServer.0.1\n");
+                    byte[] euc2 = Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding("EUC-JP"), u82);
+                    client.GetStream().Write(euc2, 0, euc2.Length);
                     break;
                 case "3":
+                    byte[] u83 = Encoding.UTF8.GetBytes("localhost:127.0.0.1\n");
+                    byte[] euc3 = Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding("EUC-JP"), u83);
+                    client.GetStream().Write(euc3, 0, euc3.Length);
                     break;
                 case "4":
                     break;

@@ -40,7 +40,7 @@ namespace CsSkkServer
                 if (list.Count > 0) { s = String.Join("/", list.ToArray()); }
                 kekka.Add(s);
             }
-            return "/" + String.Join("/", kekka.ToArray()) + "/";            
+            return "1/" + String.Join("/", kekka.ToArray()) + "/\n";            
         }        
     }
     

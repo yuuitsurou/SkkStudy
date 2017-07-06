@@ -90,7 +90,7 @@ namespace CsSkkServer
                 String [] s = this.Body[index].Split('/');
                 if (s == null) return String.Empty;
                 List<String> items = new List<string>(s); 
-                return "/" + String.Join("/", items.GetRange(1, items.Count - 1).ToArray());
+                return "1/" + String.Join("/", items.GetRange(1, items.Count - 1).ToArray()) + "\n";
             }
             else
             {
