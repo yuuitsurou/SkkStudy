@@ -54,13 +54,10 @@ namespace CsSkkServer
                 string mes = "";
                 while (mes != null && !mes.StartsWith("0"))
                 {  
-                    Messenger m = new Messenger() { Client = client };
-                    if (ReadMessage(m))
+                    ClientConnection cc = new ClientConnection(client);
+                    if (ReadMessage(cc))
                     {
-                        byte[] b = m.Ms.ToArray();
-                        byte[] buffer = new byte[m.ResSize];
-                        for (int i = 0; i < m.ResSize; i++) { buffer[i] = b[i]; }
-                        byte[] utf8Bytes = Encoding.Convert(Encoding.GetEncoding("EUC-JP"), Encoding.UTF8, buffer);
+                        byte[] utf8Bytes = Encoding.Convert(Encoding.GetEncoding("EUC-JP"), Encoding.UTF8, cc.MessageBytes());
                         mes = Encoding.UTF8.GetString(utf8Bytes, 0, utf8Bytes.Length);
                         SendMessage(client, mes);
                     }
@@ -71,23 +68,19 @@ namespace CsSkkServer
             }  
         }
 
-        private static Boolean ReadMessage(Messenger mes)
+        private static Boolean ReadMessage(ClientConnection cc)
         {
-            mes.Ms = new MemoryStream();
             byte[] resBytes = new byte[512];
             int resSize = 0;
-            mes.ResSize = 0;
+            cc.ResSize = 0;
             while (true)
             {
-                resSize = mes.Client.GetStream().Read(resBytes, 0, resBytes.Length);
-                if (resSize == 0)
-                {
-                    return false;
-                }
-                mes.Ms.Write(resBytes, mes.ResSize, resSize);
-                mes.ResSize += resSize;
-                if (!mes.Client.GetStream().DataAvailable) break;
-                if (resBytes[0] == '1' && resBytes[mes.ResSize - 1] == ' ') break;                            
+                resSize = cc.Client.GetStream().Read(resBytes, 0, resBytes.Length);
+                if (resSize == 0) return false;
+                cc.Buffer.Write(resBytes, cc.ResSize, resSize);
+                cc.ResSize += resSize;
+                if (!cc.Client.GetStream().DataAvailable) break;
+                if (resBytes[0] == '1' && resBytes[cc.ResSize - 1] == ' ') break;                            
                 if (resBytes[0] != '1') break;
             }
             return true;
@@ -143,11 +136,33 @@ namespace CsSkkServer
         }
     }
 
-    public class Messenger
+    public class ClientConnection
     {
         public TcpClient Client { set; get; }
-        public MemoryStream Ms { set; get; }
+        private MemoryStream _Buffer { set;get;}
+        public MemoryStream Buffer
+        {
+            set { this._Buffer = value; }
+            get { return this._Buffer ?? (this._Buffer = new MemoryStream()); }
+        }
         public int ResSize { set; get;}
+
+        public ClientConnection(TcpClient client)
+        {
+            this.Client = client;
+        }
+
+        public byte[] MessageBytes()
+        {
+            if (ResSize <= 0) { return null; }
+            byte[] b = this.Buffer.ToArray();
+            byte[] buf = new byte[this.ResSize];
+            for (int i = 0; i < this.ResSize; i++)
+            {
+                buf[i] = b[i];
+            }
+            return buf;
+        }
     }   
     
 }
