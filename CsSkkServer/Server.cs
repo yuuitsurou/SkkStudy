@@ -54,12 +54,13 @@ namespace CsSkkServer
                 string mes = "";
                 while (mes != null && !mes.StartsWith("0"))
                 {  
-                    MemoryStream ms = null;
-                    if (ReadMessage(client, out ms))
+                    Messenger m = new Messenger() { Client = client };
+                    if (ReadMessage(m))
                     {
-                        ArraySegment<byte> bf = new ArraySegment<byte>();
-                        ms.TryGetBuffer(out bf);
-                        byte[] utf8Bytes = Encoding.Convert(Encoding.GetEncoding("EUC-JP"), Encoding.UTF8, bf.Array);
+                        byte[] b = m.Ms.ToArray();
+                        byte[] buffer = new byte[m.ResSize];
+                        for (int i = 0; i < m.ResSize; i++) { buffer[i] = b[i]; }
+                        byte[] utf8Bytes = Encoding.Convert(Encoding.GetEncoding("EUC-JP"), Encoding.UTF8, buffer);
                         mes = Encoding.UTF8.GetString(utf8Bytes, 0, utf8Bytes.Length);
                         SendMessage(client, mes);
                     }
@@ -70,21 +71,23 @@ namespace CsSkkServer
             }  
         }
 
-        private static Boolean ReadMessage(TcpClient client, out MemoryStream ms)
+        private static Boolean ReadMessage(Messenger mes)
         {
-            ms = new MemoryStream();
+            mes.Ms = new MemoryStream();
             byte[] resBytes = new byte[512];
             int resSize = 0;
+            mes.ResSize = 0;
             while (true)
             {
-                resSize = client.GetStream().Read(resBytes, 0, resBytes.Length);
+                resSize = mes.Client.GetStream().Read(resBytes, 0, resBytes.Length);
                 if (resSize == 0)
                 {
                     return false;
                 }
-                ms.Write(resBytes, 0 ,resSize);
-                if (!client.GetStream().DataAvailable) break;
-                if (resBytes[0] == '1' && resBytes[resBytes.Length - 1] == ' ') break;                            
+                mes.Ms.Write(resBytes, mes.ResSize, resSize);
+                mes.ResSize += resSize;
+                if (!mes.Client.GetStream().DataAvailable) break;
+                if (resBytes[0] == '1' && resBytes[mes.ResSize - 1] == ' ') break;                            
                 if (resBytes[0] != '1') break;
             }
             return true;
@@ -97,13 +100,11 @@ namespace CsSkkServer
             String result = Jisyos.Search(mes);
             if (!String.IsNullOrWhiteSpace(result))
             {
-                byte[] u8 = Encoding.UTF8.GetBytes(result + '\n');
-                return Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding("EUC-JP"), u8);
+                return StringToEucBytes(result + '\n');
             }
             else
             {
-                byte[] u8 = Encoding.UTF8.GetBytes(Google.Search(mes) + '\n');
-                return Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding("EUC-JP"), u8);
+                return StringToEucBytes(Google.Search(mes) + '\n');
             }
 
         }
@@ -120,13 +121,11 @@ namespace CsSkkServer
                     client.GetStream().Write(data, 0, data.Length);
                     break;
                 case "2":
-                    byte[] u82 = Encoding.UTF8.GetBytes("CsSkkServer.0.1\n");
-                    byte[] euc2 = Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding("EUC-JP"), u82);
+                    byte[] euc2 = StringToEucBytes("CsSkkServer.0.1\n");
                     client.GetStream().Write(euc2, 0, euc2.Length);
                     break;
                 case "3":
-                    byte[] u83 = Encoding.UTF8.GetBytes("localhost:127.0.0.1\n");
-                    byte[] euc3 = Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding("EUC-JP"), u83);
+                    byte[] euc3 = StringToEucBytes("localhost:127.0.0.1\n");
                     client.GetStream().Write(euc3, 0, euc3.Length);
                     break;
                 case "4":
@@ -136,6 +135,19 @@ namespace CsSkkServer
             }
 
         }
+
+        private static byte[] StringToEucBytes(String s) 
+        {
+            byte[] u8 = Encoding.UTF8.GetBytes(s);
+            return Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding("EUC-JP"), u8);
+        }
+    }
+
+    public class Messenger
+    {
+        public TcpClient Client { set; get; }
+        public MemoryStream Ms { set; get; }
+        public int ResSize { set; get;}
     }   
     
 }
