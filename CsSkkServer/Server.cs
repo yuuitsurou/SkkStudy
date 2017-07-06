@@ -18,30 +18,39 @@ namespace CsSkkServer
 
         public static void StartServer(int port) 
         {  
-            IPAddress address = IPAddress.Parse("127.0.0.1");  
-            listener = new TcpListener(address, port);  
-   
-            listener.Start();  
-            accept = true;  
-   
-            String[] dicPath = 
-            { 
-                @"/usr/share/skk/SKK-JISYO.L", 
-                @"/usr/share/skk/SKK-JISYO.jinmei", 
-            };
-            // String dicPath = @"C:\Users\ymine\skkdic\SKK-JISYO.L";
-            Jisyos = new JisyoLibs();
-            Jisyos.SetupJisyos(dicPath);
-            Google = new GoogleIme();
-            Console.WriteLine($"Server started. Listening to TCP clients at 127.0.0.1:{port}");  
-       }  
+            try
+            {
+                IPAddress address = IPAddress.Parse("127.0.0.1");  
+                listener = new TcpListener(address, port);  
+    
+                listener.Start();
+                accept = true;  
+    
+                String[] dicPath = 
+                { 
+                    @"/usr/share/skk/SKK-JISYO.L", 
+                    @"/usr/share/skk/SKK-JISYO.jinmei", 
+                };
+                // String dicPath = @"C:\Users\ymine\skkdic\SKK-JISYO.L";
+                Jisyos = new JisyoLibs();
+                Jisyos.SetupJisyos(dicPath);
+                Google = new GoogleIme();
+                // Console.WriteLine($"Server started. Listening to TCP clients at 127.0.0.1:{port}");  
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+       }
+
+       public static void StopServer()
+       {
+           if (listener != null) { listener.Stop(); }
+       }
    
         public static void Listen()
        {  
-           if (listener == null || !accept) 
-           {
-               return;
-           }
+           if (listener == null || !accept) { return; }
             // Continue listening.  
             while (true)
             {  
