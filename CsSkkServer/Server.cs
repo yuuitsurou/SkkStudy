@@ -9,6 +9,7 @@ namespace CsSkkServer
 {
     public class Server 
     {
+        
         private static TcpListener listener { get; set; }  
 
         private static bool accept { get; set; } = false;  
@@ -45,51 +46,66 @@ namespace CsSkkServer
        }
    
         public static void Listen()
-       {  
-           if (listener == null || !accept) { return; }
-            // Continue listening.  
-            while (true)
-            {  
-                Console.WriteLine("Waiting for client...");  
-                var connectResult = listener.AcceptTcpClientAsync();
-                if (connectResult.Result == null) { continue; }
-                var client = connectResult.Result;
-                // var client = await listener.AcceptTcpClientAsync(); // Get the client  
-                Console.WriteLine("Client connected. Waiting for data.");  
-                string mes = "";
-                while (mes != null && !mes.StartsWith("0"))
+       {
+           try
+           {  
+                if (listener == null || !accept) { return; }
+                // Continue listening.  
+                while (true)
                 {  
-                    ClientConnection cc = new ClientConnection(client);
-                    if (ReadMessage(cc))
-                    {
-                        byte[] utf8Bytes = Encoding.Convert(Encoding.GetEncoding("EUC-JP"), Encoding.UTF8, cc.MessageBytes());
-                        mes = Encoding.UTF8.GetString(utf8Bytes, 0, utf8Bytes.Length);
-                        SendMessage(client, mes);
+                    Console.WriteLine("Waiting for client...");  
+                    var connectResult = listener.AcceptTcpClientAsync();
+                    if (connectResult.Result == null) { continue; }
+                    var client = connectResult.Result;
+                    // var client = await listener.AcceptTcpClientAsync(); // Get the client  
+                    Console.WriteLine("Client connected. Waiting for data.");  
+                    string mes = "";
+                    while (mes != null && !mes.StartsWith("0"))
+                    {  
+                        ClientConnection cc = new ClientConnection(client);
+                        if (ReadMessage(cc))
+                        {
+                            byte[] utf8Bytes = Encoding.Convert(Encoding.GetEncoding("EUC-JP"), Encoding.UTF8, cc.MessageBytes());
+                            mes = Encoding.UTF8.GetString(utf8Bytes, 0, utf8Bytes.Length);
+                            SendMessage(client, mes);
+                        }
                     }
+                    Console.WriteLine("Closing connection.");  
+                    client.GetStream().Dispose();
+                    client.Dispose();
                 }
-                Console.WriteLine("Closing connection.");  
-                client.GetStream().Dispose();
-                client.Dispose();
-            }  
+           }
+           catch (Exception ex)
+           {
+               throw ex;
+           }
         }
 
         private static Boolean ReadMessage(ClientConnection cc)
         {
-            byte[] resBytes = new byte[512];
-            int resSize = 0;
-            cc.ResSize = 0;
-            while (true)
+            try
             {
-                resSize = cc.Client.GetStream().Read(resBytes, 0, resBytes.Length);
-                if (resSize == 0) return false;
-                cc.Buffer.Write(resBytes, cc.ResSize, resSize);
-                cc.ResSize += resSize;
-                if (!cc.Client.GetStream().DataAvailable) break;
-                if (resBytes[0] == '1' && resBytes[cc.ResSize - 1] == ' ') break;                            
-                if (resBytes[0] != '1') break;
+                byte[] resBytes = new byte[512];
+                int resSize = 0;
+                cc.ResSize = 0;
+                while (true)
+                {
+                    resSize = cc.Client.GetStream().Read(resBytes, 0, resBytes.Length);
+                    if (resSize == 0) return false;
+                    cc.Buffer.Write(resBytes, cc.ResSize, resSize);
+                    cc.ResSize += resSize;
+                    if (!cc.Client.GetStream().DataAvailable) break;
+                    if (resBytes[0] == '1' && resBytes[cc.ResSize - 1] == ' ') break;                            
+                    if (resBytes[0] != '1') break;
+                }
+                return true;
             }
-            return true;
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
+        
         private static byte[] GetResult(String mes)
         {
             mes = mes.TrimStart('1');
@@ -109,27 +125,34 @@ namespace CsSkkServer
 
         private static void SendMessage(TcpClient client, String mes)
         {
-            byte[] data = null;
-            switch (mes.Substring(0, 1))
+            try
             {
-                case "0":
-                    break;
-                case "1":
-                    data = GetResult(mes);
-                    client.GetStream().Write(data, 0, data.Length);
-                    break;
-                case "2":
-                    byte[] euc2 = StringToEucBytes("CsSkkServer.0.1\n");
-                    client.GetStream().Write(euc2, 0, euc2.Length);
-                    break;
-                case "3":
-                    byte[] euc3 = StringToEucBytes("localhost:127.0.0.1\n");
-                    client.GetStream().Write(euc3, 0, euc3.Length);
-                    break;
-                case "4":
-                    break;
-                default:
-                    break;
+                byte[] data = null;
+                switch (mes.Substring(0, 1))
+                {
+                    case "0":
+                        break;
+                    case "1":
+                        data = GetResult(mes);
+                        client.GetStream().Write(data, 0, data.Length);
+                        break;
+                    case "2":
+                        byte[] euc2 = StringToEucBytes("CsSkkServer.0.1\n");
+                        client.GetStream().Write(euc2, 0, euc2.Length);
+                        break;
+                    case "3":
+                        byte[] euc3 = StringToEucBytes("localhost:127.0.0.1\n");
+                        client.GetStream().Write(euc3, 0, euc3.Length);
+                        break;
+                    case "4":
+                        break;
+                    default:
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
 
         }

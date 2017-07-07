@@ -90,7 +90,7 @@ namespace CsSkkServer
                 String [] s = this.Body[index].Split('/');
                 if (s == null) return String.Empty;
                 List<String> items = new List<string>(s); 
-                return "1/" + String.Join("/", items.GetRange(1, items.Count - 1).ToArray()) + "\n";
+                return String.Join("/", items.GetRange(1, items.Count - 1).ToArray());
             }
             else
             {
@@ -118,14 +118,17 @@ namespace CsSkkServer
 
         public String Search(String word)
         {
-            String result = String.Empty;
+            String resultWords = String.Empty;
             foreach (var jisyo in this.Jisyos)
             {
                 String w = jisyo.Search(word);
                 if (String.IsNullOrWhiteSpace(w)) { continue; }
-                if (!String.IsNullOrWhiteSpace(result) && w.StartsWith("/")) { w = w.TrimStart('/'); }
-                result += w;
+                if (!String.IsNullOrWhiteSpace(resultWords) && w.StartsWith("/")) { w = w.TrimStart('/'); }
+                resultWords += w;
             }
+            String result = String.Empty;
+            if (!String.IsNullOrWhiteSpace(resultWords)) { result = "1/" + resultWords; }
+            Console.WriteLine(result);
             return result;
         }
     }
