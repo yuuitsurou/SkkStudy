@@ -65,7 +65,7 @@ namespace CsSkkServer
                         ClientConnection cc = new ClientConnection(client);
                         if (ReadMessage(cc))
                         {
-                            byte[] utf8Bytes = Encoding.Convert(Encoding.GetEncoding("EUC-JP"), Encoding.UTF8, cc.MessageBytes());
+                            byte[] utf8Bytes = Encoding.Convert(Encoding.GetEncoding(20932), Encoding.UTF8, cc.MessageBytes());
                             mes = Encoding.UTF8.GetString(utf8Bytes, 0, utf8Bytes.Length);
                             SendMessage(client, mes);
                         }
@@ -111,6 +111,7 @@ namespace CsSkkServer
             mes = mes.TrimStart('1');
             mes = mes.TrimStart('/');
             mes = mes.TrimEnd(' ');
+            /* 
             String result = Jisyos.Search(mes);
             if (!String.IsNullOrWhiteSpace(result))
             {
@@ -119,7 +120,18 @@ namespace CsSkkServer
             else
             {
                 byte[] u8 = Encoding.UTF8.GetBytes(Google.Search(mes) + '\n');
-                return Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding("EUC-JP"), u8);
+                return Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding(20932), u8);
+            }
+            */
+            byte[] result = Jisyos.SearchWithResultByte(mes);
+            if (result != null)
+            {
+                return result;
+            }
+            else
+            {
+                byte[] u8 = Encoding.UTF8.GetBytes(Google.Search(mes) + '\n');
+                return Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding(20932), u8);                
             }
         }
 
@@ -137,11 +149,11 @@ namespace CsSkkServer
                         client.GetStream().Write(data, 0, data.Length);
                         break;
                     case "2":
-                        byte[] euc2 = Encoding.GetEncoding("EUC-JP").GetBytes("CsSkkServer.0.1\n");
+                        byte[] euc2 = Encoding.GetEncoding(20932).GetBytes("CsSkkServer.0.1\n");
                         client.GetStream().Write(euc2, 0, euc2.Length);
                         break;
                     case "3":
-                        byte[] euc3 = Encoding.GetEncoding("EUC-JP").GetBytes("localhost:127.0.0.1\n");
+                        byte[] euc3 = Encoding.GetEncoding(20392).GetBytes("localhost:127.0.0.1\n");
                         client.GetStream().Write(euc3, 0, euc3.Length);
                         break;
                     case "4":
