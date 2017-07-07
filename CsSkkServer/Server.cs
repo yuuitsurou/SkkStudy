@@ -65,7 +65,7 @@ namespace CsSkkServer
                         ClientConnection cc = new ClientConnection(client);
                         if (ReadMessage(cc))
                         {
-                            byte[] utf8Bytes = Encoding.Convert(Encoding.GetEncoding(20932), Encoding.UTF8, cc.MessageBytes());
+                            byte[] utf8Bytes = Encoding.Convert(Encoding.GetEncoding("EUC-JP"), Encoding.UTF8, cc.MessageBytes());
                             mes = Encoding.UTF8.GetString(utf8Bytes, 0, utf8Bytes.Length);
                             SendMessage(client, mes);
                         }
@@ -111,19 +111,7 @@ namespace CsSkkServer
             mes = mes.TrimStart('1');
             mes = mes.TrimStart('/');
             mes = mes.TrimEnd(' ');
-            /* 
-            String result = Jisyos.Search(mes);
-            if (!String.IsNullOrWhiteSpace(result))
-            {
-                return Encoding.GetEncoding("EUC-JP").GetBytes(result + '\n');
-            }
-            else
-            {
-                byte[] u8 = Encoding.UTF8.GetBytes(Google.Search(mes) + '\n');
-                return Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding(20932), u8);
-            }
-            */
-            byte[] result = Jisyos.SearchWithResultByte(mes);
+            byte[] result = Jisyos.Search(mes);
             if (result != null)
             {
                 return result;

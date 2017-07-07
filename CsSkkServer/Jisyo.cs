@@ -8,31 +8,20 @@ namespace CsSkkServer
     public class Jisyo
     {
         private String _JisyoPath { set; get; }
+
+        private Boolean ValidDictionary { set; get; }
         public Boolean SetPath(String path)
         {
+            this.ValidDictionary = true;
             if (File.Exists(path))
             {
                 this._JisyoPath = path;
-                return true;
             }
             else
             {
-                return false;
+                this.ValidDictionary = false;
             }
-        }
-
-        private List<String> _Body { set; get; }
-        private List<String> Body 
-        {
-            set { this._Body = value; }
-            get { return this._Body ?? ( this._Body = new List<string>() ); }
-        }
-
-        private List<String> _Key { set; get; }
-        private List<String> Key 
-        {
-            set { this._Key = value; }
-            get { return this._Key ?? ( this._Key = new List<string>() ); }
+            return this.ValidDictionary;
         }
 
         private List<Komoku> _KomokuList { set; get; }
@@ -48,52 +37,6 @@ namespace CsSkkServer
             if (SetPath(jisyoPath))
             {
                 BuildKomokuList();
-            }
-            else
-            {
-                throw new FileNotFoundException();
-            }
-        }
-
-        public void BuildKeyAndBody(String jisyoPath)
-        {
-            if (SetPath(jisyoPath))
-            {
-                BuildKeyAndBody();
-            }
-            else
-            {
-                throw new FileNotFoundException();
-            }
-        }
-        public void BuildKeyAndBody()
-        {
-            try {
-                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-                String [] ls = File.ReadAllLines(this._JisyoPath, Encoding.GetEncoding(20932));
-                if (ls != null)
-                {
-                    this.Body = new List<string>();
-                    foreach(String l in ls) 
-                    {
-                        if (!l.StartsWith(";;")) { this.Body.Add(l); }
-                    }
-                    this.Body.Sort(delegate(String x, String y) 
-                    {
-                        String keyX = x.Split('/')[0].TrimEnd(' ');
-                        String keyY = y.Split('/')[0].TrimEnd(' ');
-                        return (keyX == keyY ? (0) : (keyX.CompareTo(keyY) < 0 ? (-1) : (1)));
-                    });
-                    this.Key = new List<String>();
-                    foreach (String i in this.Body)
-                    {
-                        this.Key.Add(i.Split('/')[0].TrimEnd(' '));
-                    }
-                }
-            } 
-            catch (Exception ex)
-            {
-                throw ex;
             }
         }
 
@@ -145,24 +88,9 @@ namespace CsSkkServer
             }
         }
 
-        public String Search(String word)
+        public byte[] Search(String word)
         {
-            int index = this.Key.BinarySearch(word);
-            if (index > -1)
-            {
-                String [] s = this.Body[index].Split('/');
-                if (s == null) return String.Empty;
-                List<String> items = new List<string>(s); 
-                return String.Join("/", items.GetRange(1, items.Count - 1).ToArray());
-            }
-            else
-            {
-                return String.Empty;
-            }
-        }
-
-        public byte[] SearchWithResultByte(String word)
-        {
+            if (!this.ValidDictionary) { return null; }
             int index = this.KomokuList.FindIndex(x => x.Midasi == word);
             if (index > -1)
             {
@@ -192,29 +120,13 @@ namespace CsSkkServer
             }
         }
 
-        public String Search(String word)
-        {
-            String resultWords = String.Empty;
-            foreach (var jisyo in this.Jisyos)
-            {
-                String w = jisyo.Search(word);
-                if (String.IsNullOrWhiteSpace(w)) { continue; }
-                if (!String.IsNullOrWhiteSpace(resultWords) && w.StartsWith("/")) { w = w.TrimStart('/'); }
-                resultWords += w;
-            }
-            String result = String.Empty;
-            if (!String.IsNullOrWhiteSpace(resultWords)) { result = "1/" + resultWords; }
-            Console.WriteLine(result);
-            return result;
-        }
-
-        public byte[] SearchWithResultByte(String word)
+        public byte[] Search(String word)
         {
             List<byte> kekkas = new List<byte>();
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             foreach (var jisyo in this.Jisyos)
             {
-                byte[] kekka = jisyo.SearchWithResultByte(word);
+                byte[] kekka = jisyo.Search(word);
                 if (kekka == null) { continue; }
                 int start = 0;
                 if (kekkas.Count > 0 && kekka[0] == '/') { start++; }

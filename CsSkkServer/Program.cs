@@ -21,12 +21,13 @@ namespace CsSkkServer
                     if (File.Exists(s)) { paths.Add(s); }
                 }
                 **/
-                paths.Add(@"/usr/share/skk/SKK-JISYO.L");
-                paths.Add(@"/usr/share/skk/SKK-JISYO.JIS2");
-                paths.Add(@"/usr/share/skk/SKK-JISYO.JIS2004");
-                paths.Add(@"/usr/share/skk/SKK-JISYO.JIS3_4");
-                paths.Add(@"/usr/share/skk/SKK-JISYO.itaiji");
-                paths.Add(@"/usr/share/skk/SKK-JISYO.itaiji.JIS3_4");
+                paths.Add("/usr/share/skk/SKK-JISYO.L");
+                paths.Add("/usr/share/skk/SKK-JISYO.jinmei");
+                paths.Add("/usr/share/skk/SKK-JISYO.JIS2");
+                paths.Add("/usr/share/skk/SKK-JISYO.JIS2004");
+                paths.Add("/usr/share/skk/SKK-JISYO.JIS3_4");
+                paths.Add("/usr/share/skk/SKK-JISYO.itaiji");
+                paths.Add("/usr/share/skk/SKK-JISYO.itaiji.JIS3_4");
                 Server.StartServer(1178, paths.ToArray());
                 Server.Listen();
             }
