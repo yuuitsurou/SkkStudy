@@ -10,13 +10,14 @@ namespace CsSkkServer
     public class Server 
     {
         private static TcpListener listener { get; set; }  
+
         private static bool accept { get; set; } = false;  
    
         private static JisyoLibs Jisyos { set; get; }
 
         private static GoogleIme Google { set; get; }
 
-        public static void StartServer(int port) 
+        public static void StartServer(int port, String[] dicpaths) 
         {  
             try
             {
@@ -26,14 +27,9 @@ namespace CsSkkServer
                 listener.Start();
                 accept = true;  
     
-                String[] dicPath = 
-                { 
-                    @"/usr/share/skk/SKK-JISYO.L", 
-                    @"/usr/share/skk/SKK-JISYO.jinmei", 
-                };
                 // String dicPath = @"C:\Users\ymine\skkdic\SKK-JISYO.L";
                 Jisyos = new JisyoLibs();
-                Jisyos.SetupJisyos(dicPath);
+                Jisyos.SetupJisyos(dicpaths);
                 Google = new GoogleIme();
                 // Console.WriteLine($"Server started. Listening to TCP clients at 127.0.0.1:{port}");  
             }
