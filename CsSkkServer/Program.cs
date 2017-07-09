@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace CsSkkServer
 {
@@ -15,12 +16,12 @@ namespace CsSkkServer
                     Console.Error.WriteLine("Please set path to dictionaries...");
                 }
                 List<String> paths = new List<string>();
-                /**
+                /* 
                 foreach (var s in args)
                 {
                     if (File.Exists(s)) { paths.Add(s); }
                 }
-                **/
+                */
                 paths.Add("/usr/share/skk/SKK-JISYO.L");
                 paths.Add("/usr/share/skk/SKK-JISYO.jinmei");
                 paths.Add("/usr/share/skk/SKK-JISYO.JIS2");
@@ -29,7 +30,8 @@ namespace CsSkkServer
                 paths.Add("/usr/share/skk/SKK-JISYO.itaiji");
                 paths.Add("/usr/share/skk/SKK-JISYO.itaiji.JIS3_4");
                 Server.StartServer(1178, paths.ToArray());
-                Server.Listen();
+                var t = Task.Run(() => Server.Listen());
+                t.Wait();
             }
             catch (Exception ex)
             {
